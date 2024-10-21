@@ -1,0 +1,7 @@
+jmxquery==6.0.6
+psycopg2-binary==2.9.10
+SQLAlchemy>=2.0.36
+argparse==1.4.0
+dependency-injector==4.42.0
+pyyaml==6.0.2
+APScheduler==3.10.4
