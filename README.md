@@ -9,6 +9,38 @@ Proyecto para registrar los parametros de memoria de la JVM
 - Docker Compose >=1.29
 - Timescale DB >=2.8.1
 
+### Timescale DB
+
+Crear la base de datos
+```sql
+create user u_monitor_jmx;
+
+CREATE DATABASE monitor_jmx WITH OWNER = u_monitor_jmx;
+```
+Dentro de la base crear los objetos
+```sql
+CREATE TABLE htb_memory (
+    time TIMESTAMPTZ NOT NULL,
+    name VARCHAR NOT NULL,
+    value BIGINT NOT NULL
+);
+
+ALTER TABLE IF EXISTS htb_memory OWNER to u_monitor_jmx;
+-- Convertirla en una hypertabla para particionar por tiempo
+SELECT create_hypertable('htb_memory', 'time');
+--Politica de retencion
+SELECT add_retention_policy('htb_memory', INTERVAL '5 weeks');
+
+--Crear usuario de consulta para Grafana
+CREATE ROLE g_monitor_consulta NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+GRANT USAGE ON SCHEMA  public TO g_monitor_consulta;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO g_monitor_consulta;
+
+create user u_monitor_consulta with password '***' IN GROUP g_monitor_consulta;
+```
+
+
+
 ### Variables de Entorno
 <style>
 .table {
