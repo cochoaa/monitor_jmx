@@ -4,7 +4,7 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from model.base import Base
 
-class Solicitud(Base):
+class Memory(Base):
     __tablename__ = 'htb_memory'
     name = Column(String)
     value = Column(BigInteger)
