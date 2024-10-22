@@ -8,4 +8,4 @@ class Memory(Base):
     __tablename__ = 'htb_memory'
     name = Column(String)
     value = Column(BigInteger)
-    time = Column(DateTime)
+    time = Column(DateTime,primary_key=True)
