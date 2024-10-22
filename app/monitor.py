@@ -1,21 +1,27 @@
 from service.jmx_service import JMXService
 from config import log_config
-logger=log_config.getLogger()
-class Monitor():
-    def __init__(self, jmxService: JMXService):
+from service.memory_service import MemoryService
+
+logger = log_config.getLogger()
+
+
+class Monitor:
+    def __init__(self,
+                 jmxService: JMXService,
+                 memoryService: MemoryService):
         self.jmxService = jmxService
+        self.memoryService = memoryService
 
     def check(self):
         try:
-            jmxService=self.jmxService
-            if jmxService.check_Origin():
-                logger.info("Monitor Check: Conexion Correcta al Servidor Origin")
+            if self.jmxService.check():
+                logger.info("JMX Check: Conexion Correcta")
             else:
-                logger.info("Monitor Check: Conexion Fallida al Servidor Origin")
+                logger.error("JMX Check: Conexion Fallida")
 
-            if serviceSession.check_Monitor():
-                logger.info("Monitor Check: Conexion Correcta al Servidor Monitor")
+            if self.memoryService.check():
+                logger.info("BD Check: Conexion Correcta")
             else:
-                logger.info("Monitor Check: Conexion Fallida al Servidor Monitor")
-        except:
-            logger.error("Monitor Check: Conexion Fallida al Servidor Origin y Monitor")
+                logger.error("BD Check: Conexion Fallida")
+        except Exception as e:
+            logger.error(e)

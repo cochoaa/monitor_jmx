@@ -1,4 +1,6 @@
 from dependency_injector import containers, providers
+
+from monitor import Monitor
 from repository.datasource import Datasource
 from repository.jmx_repository import JMXRepository
 from repository.memory_repository import MemoryRepository
@@ -35,5 +37,11 @@ class Container(containers.DeclarativeContainer):
     memoryService = providers.Singleton(
         MemoryService,
         memoryRepository=memoryRepository
+    )
+
+    monitor = providers.Singleton(
+        Monitor,
+        jmxService=jmxService,
+        memoryService=memoryService
     )
 
