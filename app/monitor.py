@@ -25,3 +25,12 @@ class Monitor:
                 logger.error("BD Check: Conexion Fallida")
         except Exception as e:
             logger.error(e)
+
+    def __read(self):
+        metrics = self.jmxService.read()
+        return metrics
+
+    def migrate(self):
+        metrics = self.__read()
+        self.memoryService.save(metrics)
+        print(metrics)

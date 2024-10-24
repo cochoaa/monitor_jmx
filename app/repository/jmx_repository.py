@@ -45,4 +45,5 @@ class JMXRepository:
                 list_dict.append(metric_dict)
             return list_dict
         except Exception as e:
-            raise e
+            print(e)
+            return []

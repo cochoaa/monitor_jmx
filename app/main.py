@@ -2,6 +2,7 @@ import config.log_config as log_config
 import config.parser_config as parser_config
 import signal
 from config.container import Container
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 logger = log_config.getLogger()
 container = Container()
@@ -15,10 +16,27 @@ def main():
     logger.info(args)
     if args.check:
         logger.info(f"Revision de configuracion")
+        check()
     elif args.daemon:
+        interval = args.interval
+        print(type(interval))
         logger.info(f"Iniciando modo daemon")
+        daemon()
     else:
         logger.error(f"Comando desconocido")
+
+
+def check():
+    monitor = container.monitor()
+    monitor.check()
+
+
+def daemon():
+    monitor = container.monitor()
+    scheduler = BlockingScheduler()
+    scheduler.add_job(monitor.migrate, 'interval', seconds=10)
+    scheduler.start()
+
 
 def handle_sigterm(signum, frame):
     logger.info(f"Se recibió la señal SIGTERM. Deteniendo el servicio...")

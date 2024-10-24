@@ -20,7 +20,7 @@ class JMXService:
 if __name__ == "__main__":
     host = "chancay.unmsm.edu.pe"
     port = 9999
-    repository = JMXRepository(host=host,port=port)
+    repository = JMXRepository(host=host, port=port)
     service = JMXService(repository)
     memories = service.read()
     for mem in memories:
