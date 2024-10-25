@@ -11,36 +11,6 @@ Proyecto para registrar los parametros de memoria de la JVM
 
 ### Timescale DB
 
-Crear la base de datos
-```sql
-create user u_monitor_jmx;
-
-CREATE DATABASE monitor_jmx WITH OWNER = u_monitor_jmx;
-```
-Dentro de la base crear los objetos
-```sql
-CREATE TABLE htb_memory (
-    time TIMESTAMPTZ NOT NULL,
-    name VARCHAR NOT NULL,
-    value BIGINT NOT NULL
-);
-
-ALTER TABLE IF EXISTS htb_memory OWNER to u_monitor_jmx;
--- Convertirla en una hypertabla para particionar por tiempo
-SELECT create_hypertable('htb_memory', 'time');
---Politica de retencion
-SELECT add_retention_policy('htb_memory', INTERVAL '5 weeks');
-
---Crear usuario de consulta para Grafana
-CREATE ROLE g_monitor_consulta NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
-GRANT USAGE ON SCHEMA  public TO g_monitor_consulta;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO g_monitor_consulta;
-
-create user u_monitor_consulta with password '***' IN GROUP g_monitor_consulta;
-```
-
-
-
 ### Variables de Entorno
 <style>
 .table {
@@ -78,49 +48,82 @@ create user u_monitor_consulta with password '***' IN GROUP g_monitor_consulta;
   </tr>
   <tr>
     <td>DB_NAME</td>
-    <td>Nombre de la base de datos Origen</td>
-    <td>kill_session</td>
+    <td>Nombre de la base de datos</td>
+    <td>monitor_jmx</td>
+  </tr>
+    <tr>
+    <td>JMX_HOST</td>
+    <td>Ip de la base de datos Origen</td>
+    <td>chancay.unmsm.edu.pe</td>
+  </tr>
+  <tr>
+    <td>JMX_PORT</td>
+    <td>Puerto de la base de datos Origen</td>
+    <td>9999</td>
   </tr>
 </table>
 
 
 ### Complilacion y despliegue
 
-* Crear base de datos en el servidor Origen segun el script origin.sql
-* Crear base de datos en el servidor de Monitoreo segun el script monitor.sql
-* Clonar este repositorio en un servidor de aplicacion
-* Configurar las variables de entorno con el archivo .env
-* Configuracion para ejecutar como contenedores:
-```
-cd app
-docker-compose build
-#Configurar crontabs para cada monitor y killer:
-* * * * ?   cd $PATH  &&  docker-compose run
-```
+* Crear la base de datos
+```sql
+create user u_monitor_jmx;
 
-* Configuracion para ejecutar como servicio:
+CREATE DATABASE monitor_jmx WITH OWNER = u_monitor_jmx;
 ```
-mkdir -p /opt/session_manager
-cp app  /opt/session_manager
-cp .env.example  /opt/session_manager/.env
-cd /opt/session_manager && python3.11 -m venv venv
+Dentro de la base crear los objetos
+```sql
+CREATE TABLE htb_memory (
+    time TIMESTAMPTZ NOT NULL,
+    name VARCHAR NOT NULL,
+    value BIGINT NOT NULL
+);
+
+ALTER TABLE IF EXISTS htb_memory OWNER to u_monitor_jmx;
+-- Convertirla en una hypertabla para particionar por tiempo
+SELECT create_hypertable('htb_memory', 'time');
+--Politica de retencion
+SELECT add_retention_policy('htb_memory', INTERVAL '5 weeks');
+
+--Crear usuario de consulta para Grafana
+CREATE ROLE g_monitor_consulta NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+GRANT USAGE ON SCHEMA  public TO g_monitor_consulta;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO g_monitor_consulta;
+
+create user u_monitor_consulta with password '***' IN GROUP g_monitor_consulta;
+```
+* Configurar las variables de entorno con el archivo .env
+* Crear un usuario en el sistema operativo
+```bash
+useradd monitor_jmx
+```
+* Clonar este repositorio en un servidor
+* Configurar para ejecutar como servicio:
+```bash
+mkdir -p /opt/monitor_jmx
+cp app  /opt/monitor_jmx
+vim /opt/monitor_jmx/.env
+cd /opt/monitor_jmx && python3.11 -m venv venv
 . venv/bin/activate
-pip3 install -r requeriments.txt
+pip3 install -r requirements.txt
 pip3 list
 deactivate
-vi /etc/systemd/system/monitor_session.service
+cat <<EOL > /etc/systemd/system/monitor_jmx.service
 [Unit]
-Description=Monitor Session service
+Description=Monitor Memory JMX Q20
 [Service]
-User=carlos
-WorkingDirectory=/opt/session_manager/app
-EnvironmentFile=/opt/session_manager/.env
-ExecStart=/opt/session_manager/venv/bin/python3.11 /opt/session_manager/app/main.py monitor --delay 10 --daemon
+User=monitor_jmx
+WorkingDirectory=/opt/monitor_jmx/app
+EnvironmentFile=/opt/monitor_jmx/.env
+ExecStart=/opt/monitor_jmx/venv/bin/python3.11 /opt/monitor_jmx/app/main.py --daemon
 # Agrega la siguiente línea para detener el servicio con SIGTERM
 ExecStop=/bin/kill -15 $MAINPID
 [Install]
 WantedBy=multi-user.target
+EOL
 
+useradd monitor_jmx
+chown -R /opt/monitor_jmx
 systemctl daemon-reload
 ```
-<img src="documentation/gestor_sesiones.png" width="80%" height="80%">

@@ -33,4 +33,5 @@ class Monitor:
     def migrate(self):
         metrics = self.__read()
         self.memoryService.save(metrics)
-        print(metrics)
+        cantidad = len(metrics)
+        logger.info(f"{cantidad} metricas guardas")

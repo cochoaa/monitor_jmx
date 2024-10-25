@@ -19,7 +19,7 @@ def main():
         check()
     elif args.daemon:
         interval = args.interval
-        print(interval)
+        logger.info(f"Intervalo establecido en {interval} segundos")
         logger.info(f"Iniciando modo daemon")
         daemon(interval)
     else:
