@@ -99,14 +99,26 @@ create user u_monitor_consulta with password '***' IN GROUP g_monitor_consulta;
 useradd monitor_jmx
 ```
 * Clonar este repositorio en un servidor
+```bash
+git clone https://github.com/cochoaa/monitor_jmx.git
+```
 * Configurar para ejecutar como servicio:
 ```bash
 mkdir -p /opt/monitor_jmx
-cp app  /opt/monitor_jmx
-vim /opt/monitor_jmx/.env
+cp -r app  /opt/monitor_jmx
+cat <<EOL > /opt/monitor_jmx/.env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=monitor_jmx
+JMX_HOST=chancay.unmsm.edu.pe
+JMX_PORT=9999
+EOL
 cd /opt/monitor_jmx && python3.11 -m venv venv
+cp .credentials.yml.example  credentials.yml
 . venv/bin/activate
-pip3 install -r requirements.txt
+pip3 install -r app/requirements.txt
 pip3 list
 deactivate
 cat <<EOL > /etc/systemd/system/monitor_jmx.service
@@ -122,8 +134,7 @@ ExecStop=/bin/kill -15 $MAINPID
 [Install]
 WantedBy=multi-user.target
 EOL
-
-useradd monitor_jmx
-chown -R /opt/monitor_jmx
+chown -R monitor_jmx:monitor_jmx /opt/monitor_jmx
 systemctl daemon-reload
+
 ```
