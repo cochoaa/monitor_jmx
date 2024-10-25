@@ -6,6 +6,6 @@ from model.base import Base
 
 class Memory(Base):
     __tablename__ = 'htb_memory'
-    name = Column(String)
+    name = Column(String, primary_key=True)
     value = Column(BigInteger)
     time = Column(DateTime,primary_key=True)

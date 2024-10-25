@@ -19,9 +19,9 @@ def main():
         check()
     elif args.daemon:
         interval = args.interval
-        print(type(interval))
+        print(interval)
         logger.info(f"Iniciando modo daemon")
-        daemon()
+        daemon(interval)
     else:
         logger.error(f"Comando desconocido")
 
@@ -31,10 +31,10 @@ def check():
     monitor.check()
 
 
-def daemon():
+def daemon(interval: int):
     monitor = container.monitor()
     scheduler = BlockingScheduler()
-    scheduler.add_job(monitor.migrate, 'interval', seconds=10)
+    scheduler.add_job(monitor.migrate, 'interval', seconds=interval)
     scheduler.start()
 
 
