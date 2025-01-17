@@ -7,12 +7,14 @@ class JMXRepository:
     def __init__(self, host: str, port: int, user: str = None, password: str = None):
         self.user = user
         self.password = password
+        self.host = host
         jmx_url = f'service:jmx:rmi:///jndi/rmi://{host}:{port}/jmxrmi'
         self.jmx_queries = [
             JMXQuery("java.lang:type=Memory"),
-            JMXQuery("java.lang:type=MemoryPool,name=PS Eden Space/Usage"),
-            JMXQuery("java.lang:type=MemoryPool,name=PS Old Gen/Usage"),
-            JMXQuery("java.lang:type=MemoryPool,name=PS Survivor Space/Usage"),
+            JMXQuery("java.lang:type=MemoryPool,name=*Eden Space/Usage",),
+            JMXQuery("java.lang:type=MemoryPool,name=*Old Gen/Usage"),
+            JMXQuery("java.lang:type=MemoryPool,name=*Survivor Space/Usage"),
+            JMXQuery("java.lang:type=MemoryPool,name=Tenured Gen/Usage"),
             JMXQuery("java.lang:type=MemoryPool,name=Code Cache/Usage"),
             JMXQuery("java.lang:type=MemoryPool,name=Metaspace/Usage"),
             JMXQuery("java.lang:type=MemoryPool,name=Compressed Class Space/Usage")
@@ -40,7 +42,8 @@ class JMXRepository:
                 metric_dict = {
                     'time': timestamp,
                     'name': name,
-                    'value': metric.value
+                    'value': metric.value,
+                    'server': self.host,
                 }
                 list_dict.append(metric_dict)
             return list_dict

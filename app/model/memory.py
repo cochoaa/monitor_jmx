@@ -9,3 +9,4 @@ class Memory(Base):
     name = Column(String, primary_key=True)
     value = Column(BigInteger)
     time = Column(DateTime,primary_key=True)
+    server = Column(String)

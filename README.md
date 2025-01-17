@@ -77,7 +77,8 @@ Dentro de la base crear los objetos
 CREATE TABLE htb_memory (
     time TIMESTAMPTZ NOT NULL,
     name VARCHAR NOT NULL,
-    value BIGINT NOT NULL
+    value BIGINT NOT NULL,
+    server VARCHAR
 );
 
 ALTER TABLE IF EXISTS htb_memory OWNER to u_monitor_jmx;

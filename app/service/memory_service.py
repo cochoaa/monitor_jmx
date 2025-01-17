@@ -16,7 +16,8 @@ class MemoryService:
         return Memory(
             time=mem.get("time"),
             name=mem.get("name"),
-            value=mem.get("value")
+            value=mem.get("value"),
+            server=mem.get("server"),
         )
 
     def __converto_to_list_memory(self, list_dict) -> List[Memory]:
