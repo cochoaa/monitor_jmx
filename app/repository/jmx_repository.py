@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from jmxquery import JMXConnection, JMXQuery
 from typing import List
+import shutil
 
 
 class JMXRepository:
@@ -21,13 +22,27 @@ class JMXRepository:
         ]
         self.jmx_conn = JMXConnection(jmx_url)
 
-    def check(self):
+    @staticmethod
+    def __check_java():
+        java_path = shutil.which("java")
+        if java_path is None:
+            print("Java no está en el PATH.")
+            return False
+        else:
+            return True
+
+    def __check_connection(self):
         try:
             metrics = self.list_memory()
             return len(metrics)>0
         except Exception as e:
             print(e)
             return False
+
+    def check(self):
+        java_ok = self.__check_java()
+        jmx_ok = self.__check_connection()
+        return java_ok and jmx_ok
 
     def list_memory(self) -> List[dict]:
         try:
