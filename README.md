@@ -139,3 +139,30 @@ chown -R monitor_jmx:monitor_jmx /opt/monitor_jmx
 systemctl daemon-reload
 
 ```
+
+## Alternativa con Pyenv
+```bash
+#usuario root
+yum install openssl* -y
+sudo yum groupinstall "Development Tools" -y
+sudo yum install gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel wget make -y
+sudo groupadd pyenv
+cat <<EOL > /etc/profile.d/pyenv.sh
+if id -nG "$USER" | grep -qw "pyenv"; then
+    export PYENV_ROOT="/opt/pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init --path)"
+    eval "$(pyenv init - bash)"
+    eval "$(pyenv virtualenv-init -)"
+    export CPPFLAGS="-I/usr/include"
+    export LDFLAGS="-L/usr/lib64"
+fi
+EOL
+export PYENV_ROOT="/opt/pyenv"
+curl https://pyenv.run | bash
+sudo chown -R root:pyenv /opt/pyenv
+sudo chmod -R g+w /opt/pyenv/
+sudo usermod -aG pyenv monitor_jmx
+su - pyenv install 3.9
+pyenv install 3.9
+```
